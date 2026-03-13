@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NESTO AI">
 <meta name="description" content="NESTO AI - O'zbek Sun'iy Intellekti">
-<link rel="manifest" href="/nesto.ai/manifest.json">
+<link rel="manifest" href="data:application/json,{%22name%22:%22NESTO%20AI%22,%22short_name%22:%22NESTO%20AI%22,%22description%22:%22NESTO%20AI%20-%20O%27zbek%20Sun%27iy%20Intellekti%20by%20%40nodirbekdevv%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23030a05%22,%22theme_color%22:%22%2300ff6a%22,%22orientation%22:%22portrait-primary%22,%22icons%22:[{%22src%22:%22https://jabborkadirov02-lang.github.io/nesto.ai/icon-192.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22,%22purpose%22:%22any%20maskable%22},{%22src%22:%22https://jabborkadirov02-lang.github.io/nesto.ai/icon-512.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22,%22purpose%22:%22any%20maskable%22}]}">
 <title>NESTO AI</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -548,7 +548,7 @@ async function send(){
 
 // PWA Service Worker
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  navigator.serviceWorker.register('/nesto.ai/sw.js').catch(()=>{});
 }
 </script>
 </body>
