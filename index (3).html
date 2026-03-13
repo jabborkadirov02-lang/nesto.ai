@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#030a05">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NESTO AI">
+<meta name="description" content="NESTO AI - O'zbek Sun'iy Intellekti">
+<link rel="manifest" href="manifest.json">
+<title>NESTO AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#030a05;--bg2:#060f08;--surf:#0a1a0d;--surf2:#0f2214;
+  --a:#00ff6a;--a2:#00cc55;--a3:#00ff9d;
+  --yellow:#ffe74c;--pink:#ff6b9d;--blue:#4dc9ff;--red:#ff4757;
+  --txt:#e8f5eb;--txt2:#b8d4bc;--mut:#3a5c42;
+  --bdr:rgba(0,255,106,0.08);--bdr2:rgba(0,255,106,0.25);
+  --glow:rgba(0,255,106,0.07);--glow2:rgba(0,255,106,0.15);
+  --gold:#ffd700;--gold2:#ffaa00;--silver:#c0c0c0;--bronze:#cd7f32;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;height:100dvh}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;overflow:hidden}
+
+canvas#particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.35}
+.bg-mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 10% 20%,rgba(0,255,106,0.07) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 90% 80%,rgba(0,204,85,0.05) 0%,transparent 60%)}
+.scanline{position:fixed;top:-100%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,255,106,0.4),transparent);z-index:1;pointer-events:none;animation:scan 6s linear infinite}
+@keyframes scan{0%{top:-2%}100%{top:102%}}
+
+/* PAGES */
+.page{display:none;flex-direction:column;height:100%;height:100dvh}
+.page.active{display:flex}
+
+/* ===== HEADER ===== */
+header{position:relative;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--bdr2);background:rgba(3,10,5,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-shrink:0}
+header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--a),transparent);animation:hline 3s ease-in-out infinite}
+@keyframes hline{0%,100%{opacity:0.3}50%{opacity:1}}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-ico{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#00ff6a,#00cc55);display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 0 20px rgba(0,255,106,0.5);flex-shrink:0;animation:iconPulse 2s ease-in-out infinite;position:relative}
+@keyframes iconPulse{0%,100%{box-shadow:0 0 20px rgba(0,255,106,0.5)}50%{box-shadow:0 0 35px rgba(0,255,106,0.75)}}
+.logo-txt{font-weight:900;font-size:1.3rem;letter-spacing:-0.5px;color:var(--a);text-shadow:0 0 20px rgba(0,255,106,0.4)}
+.logo-sub{font-size:0.52rem;letter-spacing:1.8px;text-transform:uppercase;color:var(--a2);opacity:0.7;margin-top:1px}
+.logo-creator{font-size:0.5rem;color:var(--mut)}
+.hright{display:flex;align-items:center;gap:7px}
+.pill{display:flex;align-items:center;gap:5px;background:rgba(0,255,106,0.06);border:1px solid rgba(0,255,106,0.2);border-radius:16px;padding:4px 9px;font-size:0.66rem;color:var(--a)}
+.dot{width:5px;height:5px;background:var(--a);border-radius:50%;animation:dotP 1.5s infinite}
+@keyframes dotP{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,255,106,0.6)}50%{opacity:.5;box-shadow:0 0 0 4px rgba(0,255,106,0)}}
+.premium-btn{display:flex;align-items:center;gap:4px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#000;border:none;border-radius:8px;padding:6px 11px;font-size:0.7rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 0 15px rgba(255,215,0,0.3);animation:goldPulse 2s infinite}
+@keyframes goldPulse{0%,100%{box-shadow:0 0 15px rgba(255,215,0,0.3)}50%{box-shadow:0 0 25px rgba(255,215,0,0.5)}}
+.premium-btn:active{transform:scale(0.95)}
+
+/* ===== CHAT PAGE ===== */
+.chat{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px 14px 10px;display:flex;flex-direction:column;gap:14px;position:relative;z-index:2;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.chat::-webkit-scrollbar{display:none}
+.wlc{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:16px 10px;text-align:center;animation:wlcIn 0.7s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes wlcIn{0%{opacity:0;transform:translateY(30px) scale(0.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.wico{width:76px;height:76px;border-radius:22px;background:linear-gradient(135deg,#00ff6a,#00cc55,#00ff9d);display:flex;align-items:center;justify-content:center;font-size:2.1rem;box-shadow:0 0 50px rgba(0,255,106,0.5);animation:wicoPulse 3s ease-in-out infinite;position:relative}
+.wico-ring{position:absolute;inset:-8px;border-radius:30px;border:1px solid rgba(0,255,106,0.2);animation:ringP 2s ease-in-out infinite}
+.wico-ring2{position:absolute;inset:-16px;border-radius:36px;border:1px solid rgba(0,255,106,0.1);animation:ringP 2s ease-in-out infinite 0.5s}
+@keyframes wicoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes ringP{0%,100%{opacity:0.4}50%{opacity:1}}
+.wtitle{font-weight:900;font-size:2.2rem;letter-spacing:-1px;color:var(--a);text-shadow:0 0 25px rgba(0,255,106,0.4)}
+.wbadge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,255,106,0.08);border:1px solid rgba(0,255,106,0.2);border-radius:20px;padding:5px 14px;font-size:0.7rem;color:var(--a2);font-weight:500}
+.wsub{color:var(--txt2);font-size:0.81rem;line-height:1.6;max-width:280px;font-weight:300}
+.caps{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:340px}
+.cap{background:var(--surf);border:1px solid var(--bdr);border-radius:20px;padding:4px 10px;font-size:0.66rem;color:var(--mut);font-weight:500}
+.suggs{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;max-width:380px}
+.sg{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:10px 12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:flex-start;gap:7px;text-align:left}
+.sg:active{background:var(--surf2);border-color:var(--bdr2);transform:scale(0.97)}
+.sg-ico{font-size:0.9rem;flex-shrink:0;margin-top:1px}
+.sg-txt{font-size:0.71rem;color:var(--txt2);line-height:1.35}
+
+/* MESSAGES */
+.mrow{display:flex;gap:9px;animation:msgIn 0.35s cubic-bezier(0.34,1.56,0.64,1)}
+.mrow.user{flex-direction:row-reverse}
+@keyframes msgIn{0%{opacity:0;transform:translateY(10px) scale(0.97)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.mav{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;margin-top:2px}
+.aav{background:linear-gradient(135deg,#00ff6a,#00cc55);box-shadow:0 0 12px rgba(0,255,106,0.4)}
+.uav{background:var(--surf2);border:1px solid var(--bdr2)}
+.mbody{flex:1;min-width:0}
+.mlabel{font-size:0.62rem;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:5px}
+.alabel{color:var(--a)}.ulabel{color:var(--yellow);text-align:right}
+.bub{padding:11px 14px;border-radius:14px;font-size:0.85rem;line-height:1.72;word-break:break-word;white-space:pre-wrap}
+.abub{background:var(--surf);border:1px solid var(--bdr);border-top-left-radius:4px;position:relative;overflow:hidden}
+.abub::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,106,0.3),transparent)}
+.ubub{background:linear-gradient(135deg,#1a4d2e,#0f3320);border:1px solid rgba(0,255,106,0.25);color:var(--txt);border-top-right-radius:4px}
+.bub strong{color:var(--a);font-weight:600}
+.bub code{background:rgba(0,255,106,0.08);border:1px solid rgba(0,255,106,0.15);border-radius:4px;padding:1px 6px;font-size:0.8em;font-family:monospace;color:var(--a3)}
+.bub pre{background:rgba(0,0,0,0.4);border:1px solid rgba(0,255,106,0.12);border-radius:9px;padding:12px;font-size:0.76rem;overflow-x:auto;margin:8px 0;white-space:pre;font-family:monospace;color:var(--a3)}
+.svg-wrap{background:#fff;border-radius:10px;overflow:hidden;padding:5px;margin-top:9px;border:1px solid rgba(0,255,106,0.2)}
+.svg-wrap svg{max-width:100%;height:auto;display:block}
+.errbub{padding:10px 13px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);border-radius:11px;font-size:0.8rem;color:var(--red)}
+.trow{display:flex;gap:9px}
+.tbub{display:flex;align-items:center;gap:5px;padding:13px 17px;background:var(--surf);border:1px solid var(--bdr);border-radius:14px;border-top-left-radius:4px}
+.td{width:7px;height:7px;background:var(--a);border-radius:50%;animation:td 1.4s infinite;opacity:.4}
+.td:nth-child(2){animation-delay:.18s}.td:nth-child(3){animation-delay:.36s}
+@keyframes td{0%,60%,100%{transform:translateY(0) scale(1);opacity:.4}30%{transform:translateY(-7px) scale(1.2);opacity:1}}
+.igenbub{padding:13px 17px;background:var(--surf);border:1px solid var(--bdr2);border-radius:14px;border-top-left-radius:4px;display:flex;align-items:center;gap:10px;font-size:0.79rem;color:var(--a)}
+.genbar{height:3px;width:100px;background:rgba(0,255,106,0.1);border-radius:3px;overflow:hidden}
+.genfill{height:100%;background:linear-gradient(90deg,var(--a2),var(--a),var(--a3));animation:gf 1.6s ease-in-out infinite}
+@keyframes gf{0%{width:0%;margin-left:0}50%{width:80%}100%{width:0%;margin-left:100%}}
+
+.toolbar{display:flex;gap:5px;overflow-x:auto;padding:8px 14px 0;scrollbar-width:none;flex-shrink:0;z-index:5}
+.toolbar::-webkit-scrollbar{display:none}
+.tbtn{display:flex;align-items:center;gap:4px;white-space:nowrap;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;color:var(--mut);padding:6px 11px;font-size:0.7rem;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;transition:all 0.18s;flex-shrink:0}
+.tbtn:active,.tbtn.on{border-color:var(--a);color:var(--a);background:var(--glow2)}
+
+.inp-sec{position:relative;z-index:20;padding:10px 14px 14px;background:rgba(3,10,5,0.97);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--bdr2);flex-shrink:0}
+.inp-sec::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,106,0.4),transparent)}
+@supports(padding-bottom:env(safe-area-inset-bottom)){.inp-sec{padding-bottom:calc(14px + env(safe-area-inset-bottom))}}
+.inpwrap{display:flex;align-items:flex-end;gap:8px}
+.inpbox{flex:1;background:var(--surf);border:1px solid var(--bdr);border-radius:14px;padding:12px 14px;color:var(--txt);font-family:'Outfit',sans-serif;font-size:0.92rem;outline:none;resize:none;max-height:110px;scrollbar-width:none;line-height:1.5;transition:border 0.2s,box-shadow 0.2s;-webkit-text-size-adjust:100%}
+.inpbox:focus{border-color:var(--a2);box-shadow:0 0 0 2px rgba(0,255,106,0.08)}
+.inpbox::placeholder{color:var(--mut)}
+.sndbtn{width:46px;height:46px;border-radius:13px;border:none;flex-shrink:0;background:linear-gradient(135deg,#00ff6a,#00cc55);color:#030a05;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;transition:all 0.18s;box-shadow:0 4px 16px rgba(0,255,106,0.4)}
+.sndbtn:active{transform:scale(0.92)}.sndbtn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+.hint{text-align:center;margin-top:7px;font-size:0.6rem;color:var(--mut)}
+.hint span{color:var(--a);opacity:0.7}
+
+/* ===== PREMIUM PAGE ===== */
+#premiumPage{background:var(--bg);overflow-y:auto}
+.prem-header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(3,10,5,0.97);backdrop-filter:blur(18px);border-bottom:1px solid var(--bdr2);flex-shrink:0}
+.back-btn{width:36px;height:36px;border-radius:9px;background:var(--surf);border:1px solid var(--bdr2);color:var(--a);display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer;flex-shrink:0}
+.back-btn:active{transform:scale(0.93)}
+.prem-title{font-weight:800;font-size:1.1rem;color:var(--gold);text-shadow:0 0 15px rgba(255,215,0,0.3)}
+
+.prem-body{padding:20px 16px 40px;display:flex;flex-direction:column;gap:20px;position:relative;z-index:2}
+
+/* Hero */
+.prem-hero{text-align:center;padding:24px 16px;background:var(--surf);border:1px solid var(--bdr2);border-radius:20px;position:relative;overflow:hidden;animation:wlcIn 0.5s ease}
+.prem-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(0,255,106,0.08),transparent 60%)}
+.prem-hero-ico{font-size:3rem;margin-bottom:10px;animation:wicoPulse 2s ease-in-out infinite}
+.prem-hero h2{font-weight:900;font-size:1.6rem;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.prem-hero p{color:var(--txt2);font-size:0.82rem;line-height:1.6;max-width:280px;margin:0 auto}
+
+/* Plans */
+.plans-title{font-weight:700;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--mut);text-align:center}
+
+.plan-card{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:18px;
+  padding:20px 18px;position:relative;overflow:hidden;
+  transition:all 0.3s;animation:msgIn 0.4s ease;
+}
+.plan-card.popular{border-color:var(--a);box-shadow:0 0 30px rgba(0,255,106,0.12)}
+.plan-card.gold-plan{border-color:var(--gold);box-shadow:0 0 30px rgba(255,215,0,0.1)}
+.plan-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.plan-card.popular::before{background:linear-gradient(90deg,transparent,var(--a),transparent)}
+.plan-card.gold-plan::before{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+.plan-badge{
+  position:absolute;top:14px;right:14px;
+  padding:3px 10px;border-radius:20px;font-size:0.65rem;font-weight:700;
+}
+.badge-popular{background:rgba(0,255,106,0.15);border:1px solid rgba(0,255,106,0.3);color:var(--a)}
+.badge-best{background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:var(--gold)}
+
+.plan-icon{font-size:1.8rem;margin-bottom:8px}
+.plan-name{font-weight:800;font-size:1.1rem;margin-bottom:3px}
+.plan-name.free-color{color:var(--txt2)}
+.plan-name.basic-color{color:var(--blue)}
+.plan-name.pro-color{color:var(--a)}
+.plan-name.ultra-color{color:var(--gold)}
+.plan-desc{font-size:0.75rem;color:var(--mut);margin-bottom:14px;line-height:1.5}
+
+.plan-price{display:flex;align-items:baseline;gap:4px;margin-bottom:14px}
+.price-num{font-weight:900;font-size:1.9rem;line-height:1}
+.price-free{color:var(--txt2)}
+.price-basic{color:var(--blue)}
+.price-pro{color:var(--a);text-shadow:0 0 15px rgba(0,255,106,0.4)}
+.price-ultra{color:var(--gold);text-shadow:0 0 15px rgba(255,215,0,0.4)}
+.price-period{font-size:0.72rem;color:var(--mut);font-weight:400}
+
+.plan-features{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.feat{display:flex;align-items:center;gap:8px;font-size:0.78rem;color:var(--txt2)}
+.feat-ico{font-size:0.85rem;flex-shrink:0;width:18px;text-align:center}
+.feat-off{color:var(--mut);text-decoration:line-through}
+
+.plan-btn{
+  width:100%;padding:13px;border-radius:12px;border:none;
+  font-family:'Outfit',sans-serif;font-weight:700;font-size:0.88rem;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-free{background:var(--surf2);color:var(--mut);border:1px solid var(--bdr)}
+.btn-basic{background:linear-gradient(135deg,#1a3a6b,#0d2a5e);color:var(--blue);border:1px solid rgba(77,201,255,0.3)}
+.btn-basic:active{transform:scale(0.97)}
+.btn-pro{background:linear-gradient(135deg,#00ff6a,#00cc55);color:#030a05;box-shadow:0 4px 16px rgba(0,255,106,0.35)}
+.btn-pro:active{transform:scale(0.97)}
+.btn-ultra{background:linear-gradient(135deg,#ffd700,#ffaa00);color:#000;box-shadow:0 4px 16px rgba(255,215,0,0.3)}
+.btn-ultra:active{transform:scale(0.97)}
+
+/* Compare table */
+.compare-section{background:var(--surf);border:1px solid var(--bdr);border-radius:16px;overflow:hidden}
+.compare-title{padding:14px 16px;font-weight:700;font-size:0.82rem;color:var(--a);border-bottom:1px solid var(--bdr);letter-spacing:1px;text-transform:uppercase}
+.compare-row{display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr 1fr;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bdr);font-size:0.72rem;gap:4px}
+.compare-row:last-child{border-bottom:none}
+.compare-row.header{background:rgba(0,255,106,0.04);font-weight:700;font-size:0.68rem;color:var(--mut);text-transform:uppercase;letter-spacing:0.5px}
+.cr-feat{color:var(--txt2)}
+.cr-val{text-align:center;font-weight:600}
+.cv-free{color:var(--mut)}
+.cv-basic{color:var(--blue)}
+.cv-pro{color:var(--a)}
+.cv-ultra{color:var(--gold)}
+
+/* FAQ */
+.faq-section{display:flex;flex-direction:column;gap:8px}
+.faq-title{font-weight:700;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--mut);text-align:center}
+.faq-item{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
+.faq-q{padding:13px 16px;font-size:0.82rem;font-weight:600;color:var(--txt);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.faq-q span{color:var(--a);font-size:1rem}
+.faq-a{padding:0 16px 13px;font-size:0.78rem;color:var(--txt2);line-height:1.6;display:none}
+.faq-item.open .faq-a{display:block}
+.faq-item.open .faq-q span{transform:rotate(45deg);display:inline-block}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:linear-gradient(135deg,#00ff6a,#00cc55);color:#030a05;
+  padding:10px 20px;border-radius:20px;font-size:0.8rem;font-weight:700;
+  z-index:999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,255,106,0.4);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="bg-mesh"></div>
+<div class="scanline"></div>
+<div class="toast" id="toast"></div>
+
+<!-- ===== CHAT PAGE ===== -->
+<div class="page active" id="chatPage">
+  <header>
+    <div class="logo">
+      <div class="logo-ico">🧠</div>
+      <div>
+        <div class="logo-txt">NESTO AI</div>
+        <div class="logo-sub">Sun'iy Intellekt</div>
+        <div class="logo-creator">by @nodirbekdevv</div>
+      </div>
+    </div>
+    <div class="hright">
+      <div class="pill"><div class="dot"></div>Faol</div>
+      <button class="premium-btn" onclick="openPremium()">👑 Premium</button>
+    </div>
+  </header>
+
+  <div class="chat" id="chat">
+    <div class="wlc" id="wlc">
+      <div class="wico">🧠<div class="wico-ring"></div><div class="wico-ring2"></div></div>
+      <div class="wtitle">NESTO AI</div>
+      <div class="wbadge">⚡ @nodirbekdevv tomonidan yaratilgan</div>
+      <div class="wsub">Erkin fikrlaydigan, hamma savolga javob beradigan AI</div>
+      <div class="caps">
+        <div class="cap">🧠 Erkin fikr</div><div class="cap">🎨 Rasm</div>
+        <div class="cap">💻 Kod</div><div class="cap">🎮 O'yinlar</div>
+        <div class="cap">🌍 Dunyo</div><div class="cap">📝 Matn</div>
+      </div>
+      <div class="suggs">
+        <div class="sg" onclick="useSugg(this)"><div class="sg-ico">🎮</div><div class="sg-txt">GTA 5 haqida gapir</div></div>
+        <div class="sg" onclick="useSugg(this)"><div class="sg-ico">🎨</div><div class="sg-txt">Koinot rasmini chiz</div></div>
+        <div class="sg" onclick="useSugg(this)"><div class="sg-ico">🌍</div><div class="sg-txt">Eng katta mamlakatlar</div></div>
+        <div class="sg" onclick="useSugg(this)"><div class="sg-ico">💬</div><div class="sg-txt">O'zing haqida gapirib ber</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="tbtn" id="imgBtn" onclick="toggleImg()">🎨 Rasm</button>
+    <button class="tbtn" onclick="quick('Tarjima qil: ')">🌐 Tarjima</button>
+    <button class="tbtn" onclick="quick('Kod yoz: ')">💻 Kod</button>
+    <button class="tbtn" onclick="quick('She\'r yoz: ')">✍️ She'r</button>
+    <button class="tbtn" onclick="quick('Hikoya yoz: ')">📖 Hikoya</button>
+    <button class="tbtn" onclick="quick('Hissobla: ')">🔢 Hisob</button>
+    <button class="tbtn" onclick="quick('CV yozib ber: ')">📄 CV</button>
+  </div>
+
+  <div class="inp-sec">
+    <div class="inpwrap">
+      <textarea class="inpbox" id="inp" placeholder="Savol bering, fikr ayting..." rows="1"></textarea>
+      <button class="sndbtn" id="sndbtn" onclick="send()">➤</button>
+    </div>
+    <div class="hint"><span>NESTO AI</span> · @nodirbekdevv · Groq Llama 3.3</div>
+  </div>
+</div>
+
+<!-- ===== PREMIUM PAGE ===== -->
+<div class="page" id="premiumPage">
+  <div class="prem-header">
+    <button class="back-btn" onclick="closePremium()">←</button>
+    <div class="prem-title">👑 Premium Tariflar</div>
+  </div>
+
+  <div class="prem-body">
+    <!-- Hero -->
+    <div class="prem-hero">
+      <div class="prem-hero-ico">👑</div>
+      <h2>NESTO AI Premium</h2>
+      <p>Cheksiz imkoniyatlar bilan yangi darajaga chiqing. Tezroq, aqlliroq, kuchliroq!</p>
+    </div>
+
+    <div class="plans-title">Tariflarni tanlang</div>
+
+    <!-- FREE -->
+    <div class="plan-card">
+      <div class="plan-icon">🆓</div>
+      <div class="plan-name free-color">Bepul</div>
+      <div class="plan-desc">Boshlash uchun ideal. Asosiy funksiyalar mavjud.</div>
+      <div class="plan-price"><span class="price-num price-free">0</span><span class="price-period">so'm / oy</span></div>
+      <div class="plan-features">
+        <div class="feat"><span class="feat-ico">✅</span> Kuniga 20 ta savol</div>
+        <div class="feat"><span class="feat-ico">✅</span> O'zbek tili qo'llab-quvvatlash</div>
+        <div class="feat"><span class="feat-ico">✅</span> Asosiy SVG rasm yaratish</div>
+        <div class="feat"><span class="feat-ico">✅</span> Tarjima funksiyasi</div>
+        <div class="feat"><span class="feat-ico">❌</span><span class="feat-off">Cheksiz savol</span></div>
+        <div class="feat"><span class="feat-ico">❌</span><span class="feat-off">HD rasm yaratish</span></div>
+        <div class="feat"><span class="feat-ico">❌</span><span class="feat-off">Tezkor javob</span></div>
+      </div>
+      <button class="plan-btn btn-free" onclick="showToast('Siz allaqachon bepul tarifdasiz!')">Joriy tarif</button>
+    </div>
+
+    <!-- BASIC -->
+    <div class="plan-card">
+      <div class="plan-badge badge-popular">🔥 Mashhur</div>
+      <div class="plan-icon">⚡</div>
+      <div class="plan-name basic-color">Basic</div>
+      <div class="plan-desc">Ko'proq savol va tezkor javoblar uchun.</div>
+      <div class="plan-price"><span class="price-num price-basic">29 000</span><span class="price-period">so'm / oy</span></div>
+      <div class="plan-features">
+        <div class="feat"><span class="feat-ico">✅</span> Kuniga 100 ta savol</div>
+        <div class="feat"><span class="feat-ico">✅</span> Tezkor javob (2x tez)</div>
+        <div class="feat"><span class="feat-ico">✅</span> Yaxshilangan SVG rasmlar</div>
+        <div class="feat"><span class="feat-ico">✅</span> Kod yozish (kengaytirilgan)</div>
+        <div class="feat"><span class="feat-ico">✅</span> Chat tarixi saqlash</div>
+        <div class="feat"><span class="feat-ico">❌</span><span class="feat-off">Cheksiz savol</span></div>
+        <div class="feat"><span class="feat-ico">❌</span><span class="feat-off">Ultra HD rasm</span></div>
+      </div>
+      <button class="plan-btn btn-basic" onclick="showToast('Basic tarif tez orada!')">Tanlash →</button>
+    </div>
+
+    <!-- PRO -->
+    <div class="plan-card popular">
+      <div class="plan-badge badge-popular">⭐ Tavsiya</div>
+      <div class="plan-icon">🚀</div>
+      <div class="plan-name pro-color">Pro</div>
+      <div class="plan-desc">Professional foydalanuvchilar uchun to'liq paket.</div>
+      <div class="plan-price"><span class="price-num price-pro">79 000</span><span class="price-period">so'm / oy</span></div>
+      <div class="plan-features">
+        <div class="feat"><span class="feat-ico">✅</span> Cheksiz savol</div>
+        <div class="feat"><span class="feat-ico">✅</span> Ultra tezkor javob (5x)</div>
+        <div class="feat"><span class="feat-ico">✅</span> HD SVG + rangbar rasmlar</div>
+        <div class="feat"><span class="feat-ico">✅</span> Barcha kod tillari</div>
+        <div class="feat"><span class="feat-ico">✅</span> Fayl yuklash va tahlil</div>
+        <div class="feat"><span class="feat-ico">✅</span> Cheksiz chat tarixi</div>
+        <div class="feat"><span class="feat-ico">✅</span> Telegram bot integratsiya</div>
+        <div class="feat"><span class="feat-ico">❌</span><span class="feat-off">API kirish</span></div>
+      </div>
+      <button class="plan-btn btn-pro" onclick="showToast('Pro tarif tez orada ishga tushadi! 🚀')">🚀 Pro olish</button>
+    </div>
+
+    <!-- ULTRA -->
+    <div class="plan-card gold-plan">
+      <div class="plan-badge badge-best">👑 Eng yaxshi</div>
+      <div class="plan-icon">💎</div>
+      <div class="plan-name ultra-color">Ultra</div>
+      <div class="plan-desc">Biznes va korporativ foydalanuvchilar uchun.</div>
+      <div class="plan-price"><span class="price-num price-ultra">199 000</span><span class="price-period">so'm / oy</span></div>
+      <div class="plan-features">
+        <div class="feat"><span class="feat-ico">✅</span> Hamma Pro imkoniyatlar</div>
+        <div class="feat"><span class="feat-ico">✅</span> API kirish (developer)</div>
+        <div class="feat"><span class="feat-ico">✅</span> Shaxsiy AI modeli o'rgatish</div>
+        <div class="feat"><span class="feat-ico">✅</span> 10 ta foydalanuvchi hisobi</div>
+        <div class="feat"><span class="feat-ico">✅</span> 24/7 qo'llab-quvvatlash</div>
+        <div class="feat"><span class="feat-ico">✅</span> Ultra HD rasm generatsiya</div>
+        <div class="feat"><span class="feat-ico">✅</span> Maxsus korporativ dizayn</div>
+        <div class="feat"><span class="feat-ico">✅</span> Oylik analitik hisobot</div>
+      </div>
+      <button class="plan-btn btn-ultra" onclick="showToast('Ultra tarif uchun @nodirbekdevv ga murojaat qiling!')">💎 Ultra olish</button>
+    </div>
+
+    <!-- COMPARE -->
+    <div class="compare-section">
+      <div class="compare-title">📊 Tariflarni solishtirish</div>
+      <div class="compare-row header">
+        <span>Xususiyat</span>
+        <span style="text-align:center">Bepul</span>
+        <span style="text-align:center;color:var(--blue)">Basic</span>
+        <span style="text-align:center;color:var(--a)">Pro</span>
+        <span style="text-align:center;color:var(--gold)">Ultra</span>
+      </div>
+      <div class="compare-row"><span class="cr-feat">Kunlik savol</span><span class="cr-val cv-free">20</span><span class="cr-val cv-basic">100</span><span class="cr-val cv-pro">∞</span><span class="cr-val cv-ultra">∞</span></div>
+      <div class="compare-row"><span class="cr-feat">Javob tezligi</span><span class="cr-val cv-free">1x</span><span class="cr-val cv-basic">2x</span><span class="cr-val cv-pro">5x</span><span class="cr-val cv-ultra">10x</span></div>
+      <div class="compare-row"><span class="cr-feat">Rasm yaratish</span><span class="cr-val cv-free">✓</span><span class="cr-val cv-basic">HD</span><span class="cr-val cv-pro">UHD</span><span class="cr-val cv-ultra">4K</span></div>
+      <div class="compare-row"><span class="cr-feat">API kirish</span><span class="cr-val cv-free">✗</span><span class="cr-val cv-basic">✗</span><span class="cr-val cv-pro">✗</span><span class="cr-val cv-ultra">✓</span></div>
+      <div class="compare-row"><span class="cr-feat">Qo'llab-quvvatlash</span><span class="cr-val cv-free">✗</span><span class="cr-val cv-basic">Email</span><span class="cr-val cv-pro">Chat</span><span class="cr-val cv-ultra">24/7</span></div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq-section">
+      <div class="faq-title">Savol-javob</div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">To'lov qanday amalga oshiriladi? <span>+</span></div>
+        <div class="faq-a">Payme, Click yoki Telegram orqali to'lov qilishingiz mumkin. To'lovdan so'ng 5 daqiqa ichida hisobingiz faollashadi.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Bekor qilish mumkinmi? <span>+</span></div>
+        <div class="faq-a">Ha, istalgan vaqt obunani bekor qilishingiz mumkin. Pulni qaytarish siyosati: 3 kun ichida to'liq qaytariladi.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Bepul sinab ko'rish bormi? <span>+</span></div>
+        <div class="faq-a">Ha! Pro tarif uchun 7 kunlik bepul sinov muddati mavjud. Karta ma'lumoti talab qilinmaydi.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Aloqa: <span>+</span></div>
+        <div class="faq-a">Telegram: @nodirbekdevv — har qanday savol uchun murojaat qiling!</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:10px 0;font-size:0.7rem;color:var(--mut)">
+      © 2025 NESTO AI · @nodirbekdevv tomonidan yaratilgan
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CONFIG =====
+const API_KEY="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";
+const API_URL="https://api.groq.com/openai/v1/chat/completions";
+const MODEL="llama-3.3-70b-versatile";
+const SYSTEM=`Sen NESTO AI — @nodirbekdevv tomonidan yaratilgan o'zbek sun'iy intellektisan.
+
+KIM YARATGAN: @nodirbekdevv (Nodirbek) 2025-yilda yaratgan. Shuni aniq ayt.
+ANIQ MA'LUMOT YO'Q bo'lsa: "Bu haqda aniq ma'lumotim yo'q, lekin..." de.
+
+QOIDALAR:
+1. HECH QACHON "bilmayman" yoki "qila olmayman" dema
+2. O'zbek tilida yoz. Boshqa tilda so'rasa o'sha tilda javob ber
+3. Inson kabi jonli, qiziqarli, erkin muloqot qil
+4. Hazilni tush, xursand bo'l, hamdard bo'l
+5. Javoblar to'liq va foydali bo'lsin
+
+RASM: Rasm so'ralganda faqat SVG kodi ber:
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="400" viewBox="0 0 500 400">...</svg>
+Ko'p rang, gradient, batafsil. Boshqa matn yozma.
+
+HAMMA NARSAGA JAVOB BER:
+🎮 O'yinlar: GTA, Minecraft, FIFA, PUBG, Fortnite, CS:GO va barchasi
+🌍 Dunyo, tarix, siyosat, sport, musiqa, kino
+🔬 Fan, matematika, fizika, kimyo
+💻 Dasturlash, AI, texnologiya
+❤️ Munosabatlar, hayot, maslahat
+📚 Ta'lim, dars, imtihon`;
+
+// PARTICLES
+const canvas=document.getElementById('particles');
+const ctx=canvas.getContext('2d');
+let pts=[];
+function resizeC(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resizeC();window.addEventListener('resize',resizeC);
+for(let i=0;i<55;i++)pts.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5,o:Math.random()*.4+.1});
+function animP(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=canvas.width;if(p.x>canvas.width)p.x=0;if(p.y<0)p.y=canvas.height;if(p.y>canvas.height)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(0,255,106,${p.o})`;ctx.fill()});
+  requestAnimationFrame(animP);
+}
+animP();
+
+// APP
+let msgs=[],loading=false,imgMode=false;
+const inp=document.getElementById('inp');
+const sndbtn=document.getElementById('sndbtn');
+const chatEl=document.getElementById('chat');
+const wlc=document.getElementById('wlc');
+
+inp.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px'});
+inp.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+
+function openPremium(){document.getElementById('chatPage').classList.remove('active');document.getElementById('premiumPage').classList.add('active');document.getElementById('premiumPage').scrollTop=0}
+function closePremium(){document.getElementById('premiumPage').classList.remove('active');document.getElementById('chatPage').classList.add('active')}
+function toggleFaq(el){el.classList.toggle('open')}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
+function toggleImg(){imgMode=!imgMode;document.getElementById('imgBtn').classList.toggle('on',imgMode);inp.placeholder=imgMode?'🎨 Rasmni tasvirlab bering...':'Savol bering, fikr ayting...';inp.focus()}
+function quick(t){inp.value=t;inp.dispatchEvent(new Event('input'));inp.focus()}
+function useSugg(el){inp.value=el.querySelector('.sg-txt').textContent;inp.dispatchEvent(new Event('input'));send()}
+function clearChat(){msgs=[];chatEl.innerHTML='';chatEl.appendChild(wlc);wlc.style.display='flex'}
+function hide(){if(wlc.style.display!=='none')wlc.style.display='none'}
+function scroll(){setTimeout(()=>chatEl.scrollTop=chatEl.scrollHeight,80)}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmt(t){
+  let h=esc(t);
+  h=h.replace(/```[\w]*\n?([\s\S]*?)```/g,'<pre>$1</pre>');
+  h=h.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  h=h.replace(/^### (.+)/gm,'<strong style="font-size:.93rem;color:var(--a);display:block;margin:8px 0 3px">$1</strong>');
+  h=h.replace(/^## (.+)/gm,'<strong style="font-size:1rem;color:var(--a);display:block;margin:9px 0 4px">$1</strong>');
+  h=h.replace(/^# (.+)/gm,'<strong style="font-size:1.05rem;color:var(--a3);display:block;margin:10px 0 4px">$1</strong>');
+  h=h.replace(/^- (.+)/gm,'<span style="display:flex;gap:7px;margin:3px 0"><span style="color:var(--a);flex-shrink:0">▸</span><span>$1</span></span>');
+  h=h.replace(/^\d+\. (.+)/gm,'<span style="display:block;margin:3px 0;padding-left:4px">$1</span>');
+  return h;
+}
+function getSVG(t){const m=t.match(/<svg[\s\S]*?<\/svg>/i);return m?m[0]:null}
+function wantsImg(t){if(imgMode)return true;const kw=['rasm','chiz','surat','manzara','logotip','logo','portret','vizual','draw','paint','image'];return kw.some(k=>t.toLowerCase().includes(k))}
+
+function addUser(text){
+  hide();const d=document.createElement('div');d.className='mrow user';
+  d.innerHTML=`<div class="mav uav">👤</div><div class="mbody"><div class="mlabel ulabel">Siz</div><div class="bub ubub">${esc(text)}</div></div>`;
+  chatEl.appendChild(d);scroll();
+}
+function addAI(html){
+  hide();const d=document.createElement('div');d.className='mrow';
+  d.innerHTML=`<div class="mav aav">🤖</div><div class="mbody"><div class="mlabel alabel">NESTO AI</div>${html}</div>`;
+  chatEl.appendChild(d);scroll();
+}
+function addTyping(isImg){
+  hide();const d=document.createElement('div');d.className='trow';d.id='typing';
+  const inner=isImg?`<div class="igenbub">🎨 Rasm yaratilmoqda...<div class="genbar"><div class="genfill"></div></div></div>`:`<div class="tbub"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+  d.innerHTML=`<div class="mav aav">🤖</div><div class="mbody"><div class="mlabel alabel">NESTO AI</div>${inner}</div>`;
+  chatEl.appendChild(d);scroll();
+}
+function rmTyping(){const t=document.getElementById('typing');if(t)t.remove()}
+
+async function send(){
+  const text=inp.value.trim();if(!text||loading)return;
+  loading=true;sndbtn.disabled=true;inp.value='';inp.style.height='auto';
+  const wImg=wantsImg(text);
+  msgs.push({role:'user',content:text});
+  addUser(text);addTyping(wImg);
+  let up=text;
+  if(wImg)up=`Foydalanuvchi bu rasmni so'radi: "${text}"\nMukammal SVG yarat:\n- <svg xmlns="http://www.w3.org/2000/svg" width="500" height="400" viewBox="0 0 500 400">\n- Ko'p rang, gradient, batafsil\n- FAQAT SVG kodi`;
+  const apiMsgs=[{role:'system',content:SYSTEM},...msgs.slice(0,-1),{role:'user',content:up}];
+  try{
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},body:JSON.stringify({model:MODEL,messages:apiMsgs,max_tokens:2048,temperature:0.85})});
+    const data=await res.json();rmTyping();
+    if(data.error){addAI(`<div class="errbub">⚠️ ${esc(data.error.message||'Xatolik')}</div>`)}
+    else if(data.choices&&data.choices[0]){
+      const aiText=data.choices[0].message.content;
+      msgs.push({role:'assistant',content:aiText});
+      const svg=getSVG(aiText);
+      if(svg){addAI(`<div class="bub abub">Mana rasmingiz ✨<div class="svg-wrap">${svg}</div></div>`)}
+      else{addAI(`<div class="bub abub">${fmt(aiText)}</div>`)}
+    }else{addAI(`<div class="errbub">⚠️ Javob kelmadi. Qayta urinib ko'ring.</div>`)}
+  }catch(e){rmTyping();addAI(`<div class="errbub">⚠️ Ulanishda xatolik: ${esc(e.message)}</div>`)}
+  loading=false;sndbtn.disabled=false;inp.focus();
+}
+
+// PWA Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
